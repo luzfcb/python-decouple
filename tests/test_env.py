@@ -83,3 +83,7 @@ def test_env_support_space(config):
     assert 'text' == config('IgnoreSpace')
     assert ' text' == config('RespectSingleQuoteSpace')
     assert ' text' == config('RespectDoubleQuoteSpace')
+
+def test_env_double_quote_with_unicode(config):
+    assert u"Diretoria de Tecnologia da Informação,ou=Defensoria," == config('DOUBLE_QUOTE_SPACE_WITH_UNICODE')
+    assert "Diretoria de Tecnologia da Informação,ou=Defensoria," == config('DOUBLE_QUOTE_SPACE_WITH_UNICODE')
