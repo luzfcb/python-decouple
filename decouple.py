@@ -197,9 +197,10 @@ class AutoConfig(object):
         '.env': RepositoryEnv,
     }
 
-    def __init__(self, search_path=None):
+    def __init__(self, search_path=None, parents=True):
         self.search_path = search_path
         self.config = None
+        self.search_parents = parents
 
     def _find_file(self, path):
         # look for all files in the current path
@@ -209,9 +210,10 @@ class AutoConfig(object):
                 return filename
 
         # search the parent
-        parent = os.path.dirname(path)
-        if parent and parent != os.path.sep:
-            return self._find_file(parent)
+        if self.search_parents:
+            parent = os.path.dirname(path)
+            if parent and parent != os.path.sep:
+                return self._find_file(parent)
 
         # reached root without finding any files.
         return ''
