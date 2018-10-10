@@ -20,6 +20,14 @@ class UndefinedValueError(Exception):
     pass
 
 
+class DoesNotExist(Exception):
+    pass
+
+
+class UnsupportedFormatError(Exception):
+    pass
+
+
 class Undefined(object):
     """
     Class to represent undefined type.
@@ -139,6 +147,39 @@ class RepositoryEnv(RepositoryEmpty):
         return self.data[key]
 
 
+class RepositoryJSON(RepositoryEmpty):
+    """
+    # extracted from https://github.com/henriquebastos/python-decouple/pull/63
+    Retrieves option keys from a JSON file.
+    The file, when loaded, is assumed to return a python dict,
+    the keys of which are used as option keys.
+     This type of repository has these advantages:
+    1) Casting is unnecessary, since the settings have a type.
+    2) Settings can be structured types like lists or dicts.
+    And these disadvantages:
+    1) A single error in the file will prevent the whole file from loading.
+    2) It's trickier than any of the other formats to edit manually.
+    """
+
+    def __init__(self, source):
+        if not os.path.isfile(source):
+            raise DoesNotExist('Config file "{}" not found'.format(source))
+        import json
+        with open(source) as file_:
+            self.data = json.load(file_)
+            if not isinstance(self.data, dict):
+                raise UnsupportedFormatError("The JSON file {} didn't return a dict when loaded".format(source))
+
+    def __contains__(self, key):
+        return key in self.data
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def dict(self):
+        return self.data
+
+
 class AutoConfig(object):
     """
     Autodetects the config file and type.
@@ -151,6 +192,7 @@ class AutoConfig(object):
 
     """
     SUPPORTED = {
+        'secrets.json': RepositoryJSON,
         'settings.ini': RepositoryIni,
         '.env': RepositoryEnv,
     }
